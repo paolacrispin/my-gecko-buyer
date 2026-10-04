@@ -15,7 +15,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .check import NotYetWritten, Refused, refuse
+from .check import Refused, refuse
+
 
 @dataclass(frozen=True)
 class MenuItem:

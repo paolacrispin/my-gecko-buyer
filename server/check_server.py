@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
+from guard import is_public_url
 from mcp.server import MCPServer
 
 from buyer.check import check_all
 from buyer.intent import IntentRecord
 from buyer.prepared import Prepared
-from guard import is_public_url
-import os
-
 
 mcp = MCPServer("gecko-purchase-check")
 
