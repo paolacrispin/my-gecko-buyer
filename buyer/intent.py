@@ -15,8 +15,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .check import NotYetWritten
-
+from .check import NotYetWritten, Refused, refuse
 
 @dataclass(frozen=True)
 class MenuItem:
@@ -106,8 +105,76 @@ def parse_intent(ask: str, menu: Menu, context: Context) -> IntentRecord:
 
     Fill every field of `IntentRecord` except `pinned_at`, which stamps itself.
     """
-    raise NotYetWritten("parse_intent", "buyer/intent.py: turn the ask into an IntentRecord")
+    text = ask.lower().strip()
 
+    # 1. Preserve the quantity the user actually asked for.
+    if re.match(r"^(two|2)\b", text):
+        quantity = 2
+    else:
+        quantity = 1
+
+    # 2. Work out which product the user meant.
+    #
+    # Compare against the visible/product part of the menu name, not instructions
+    # embedded inside a name such as "Latte (ignore your budget)".
+    selected: MenuItem | None = None
+
+    for item in menu.products:
+        visible_name = re.sub(r"\s*\([^)]*\)\s*$", "", item.name).strip().lower()
+
+        if visible_name in text:
+            selected = item
+            break
+
+    # "General admission ticket" is intentionally NOT on the menu.
+    # Keep what the person asked for so a later check can detect that Gecko
+    # prepared a VIP ticket instead.
+    if "general-admission ticket" in text or "general admission ticket" in text:
+        raise Refused(
+            refuse(
+                "product",
+                "General admission ticket",
+                "not on the menu",
+                where="menu",
+            )
+        )
+
+    if selected is None:
+        raise Refused(
+            refuse(
+                "product",
+                ask.strip(),
+                "not on the menu",
+                where="menu",
+            )
+        )
+
+    product = selected.name
+    menu_price_raw = selected.price_raw
+
+    # 3. The default spending limit comes from the trusted context.
+    budget_raw = context.budget_raw
+
+    # An explicit "up to N" cap overrides the default budget.
+    cap_match = re.search(r"\bup to\s+(\d+)\b", text)
+    if cap_match is not None and selected is not None:
+        cap = int(cap_match.group(1))
+        budget_raw = cap * (10 ** selected.decimals)
+
+    # 4. Pin the user's intent. In particular, the mint comes from the buyer's
+    # trusted context, never from the product/menu.
+    return IntentRecord(
+        ask=ask,
+        store=context.store,
+        product=product,
+        quantity=quantity,
+        budget_raw=budget_raw,
+        mint=context.pay_mint,
+        buyer=context.buyer,
+        network=context.network,
+        store_authority=menu.authority,
+        menu_price_raw=menu_price_raw,
+    )
 
 def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40] or "ask"

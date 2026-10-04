@@ -7,17 +7,15 @@ One design rule: everything you show ends in a **receipt** (it landed, and this 
 moved) or a **refusal** (it did not sign, and this is the field that disagreed).
 
 ## The six minutes
-
 | Min | On screen | Backed by | What I say |
 |---|---|---|---|
-| 0:00 | your README's first lines: the sentence and the explorer link | `README.md` | |
-| 0:45 | your assistant with Gecko connected: `list_stores` shows *your* store | `docs/connect.md`, `store/store.json` | |
-| 1:30 | the live buy: pin, prepare, 7 ticks, sign, verify, submit | `uv run buyer "one espresso" --devnet` | |
-| 2:30 | the landing: the explorer, then the receipt with ledger deltas | `receipts/<sig8>.md` | |
-| 3:15 | **the injected failure**: the judge draws a card; your buyer refuses and signs nothing | `buyer/check.py`, `refusals/` | |
-| 4:30 | tests and the five-case table; one test that was red first | `uv run pytest`, `docs/EVAL_REPORT.md` | |
-| 5:15 | the ADR: the decision, and what would reverse it | `docs/adr/0001-refusals-before-signing.md` | |
-
+| 0:00 | my README's first lines and the devnet explorer link | `README.md` | My capstone is a buyer agent that either pays exactly what I asked for or refuses and names the field that disagreed. The important rule is that no transaction is signed until the prepared bytes have been checked against a pinned intent. |
+| 0:45 | Gecko `list_stores` showing `dev3paolacrispin` | `docs/connect.md`, `store/store.json` | This is my store on Solana devnet. Gecko can read its three products, but Gecko never holds my private key. My keys stay outside the repository in `~/.config/dev3pack/`. |
+| 1:30 | `uv run buyer "one espresso" --devnet` | live buyer run | Here the request is pinned before any transaction exists. Gecko prepares unsigned bytes, my buyer checks program, store, product, price, mint, quantity and destination, then signs, verifies the signed bytes and only then submits. |
+| 2:30 | the devnet explorer and the reconciled receipt | `receipts/<sig8>.md` | I do not treat a successful submit response as proof. The receipt reads the ledger before and after. In my live purchase the buyer moved -1000000, the store moved +1000000, and total_purchases moved from 0 to 1. |
+| 3:15 | one injected failure card and its refusal | `buyer/check.py`, `refusals/` | A refusal is also a successful outcome. For example, asking for two units when Gecko prepared one refuses on quantity before signing. Tampered signed bytes are rejected by verify before submit, and stale bytes are rejected before signing. |
+| 4:30 | tests, recorded cases and evaluation report | `uv run pytest`, `docs/EVAL_REPORT.md` | My tests currently pass with 98 passed and 2 skipped. The recorded cases are 6/6 and the four failure cards are 4/4. Testing also exposed a real parser bug: the 2 in “tip up to 2 USDC” was initially interpreted as quantity, so I changed quantity parsing and reran the suite. |
+| 5:15 | the ADR about refusing before signing | `docs/adr/0001-refusals-before-signing.md` | My design decision is to compare every safety-relevant field before signing and verify the signed bytes again before submission. I would remove a check only if I could demonstrate that another independently enforced guarantee binds the same property without weakening the refusal boundary. |
 The **finalists** (the students presenting on Friday, named by the instructor) may do
 minute 1:30 on mainnet against geckocoffee instead, with a registered, funded wallet (see
 "Friday on mainnet" below). Everyone else stays on devnet, and that is the whole defence.

@@ -1,0 +1,13 @@
+{
+  "ask": "module 3, paid in USDC",
+  "step": "prepare",
+  "field": "gecko:receipt-failed",
+  "asked": null,
+  "found": null,
+  "where": "gecko",
+  "note": "the simulation did not pass, so no transaction is returned: a transaction that reverts against observed state would only cost you a fee on chain. Likely cause: sender_token_account 6tra17mWikKhV5ZtSbN9c6cdMYgG6X84rZ8TyzH1du5x does not exist on devnet \u2014 the buyer holds no token account for the store'",
+  "signed": false,
+  "intent": "intents/20261004T185044.091638-module-3-paid-in-usdc.json",
+  "source": "devnet",
+  "at": "2026-10-04T18:50:45.188661+00:00"
+}
