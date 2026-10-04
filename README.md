@@ -1,27 +1,30 @@
 # Dev3Pack Gecko capstone: a buyer that pays, or says why not
 
-![Python](https://img.shields.io/badge/python-3.11+-blue)
-![uv](https://img.shields.io/badge/uv-managed-6e56cf)
-![Solana](https://img.shields.io/badge/Solana-devnet-9945FF)
-![License](https://img.shields.io/badge/license-MIT-blue)
+My capstone is a guarded Solana devnet buyer that pins the request, verifies seven fields before signing, verifies the signed bytes before submission, and reconciles the result with the ledger; my store `dev3paolacrispin` is on [Solana Explorer](https://explorer.solana.com/address/BdhjwVvpaAygNY8pz4PxbZ954SDcZ7eYgbCy9wJc9Dic?cluster=devnet).
 
-**Open your own store on Solana devnet and build a buyer agent that buys from it through
-Gecko: it pins what was asked before any bytes exist, refuses by field when the prepared
-purchase disagrees, signs only after a passing simulation, and writes one receipt, read
-from the ledger, that says what moved.**
+## Landed purchase
 
-You ask once, in plain words. Your agent reads the menu through Gecko, gets the purchase
-prepared as unsigned bytes, checks every field against what you asked, signs only if they
-agree, and writes one receipt that says what moved. When they disagree, it refuses and
-names the field.
+I bought one Espresso from my own store on devnet.
 
-A purchase that lands proves the plumbing. A purchase refused by field proves you.
+- signature: `VqNZWzooJyA4EFpHgEzfLVUHRYqKiVv345SPwisGjfgGqZGKH7yFjZQPFyg5LrGEnXreLFhLxgLYBURH5yE2EUP`
+- [explorer transaction](https://explorer.solana.com/tx/VqNZWzooJyA4EFpHgEzfLVUHRYqKiVv345SPwisGjfgGqZGKH7yFjZQPFyg5LrGEnXreLFhLxgLYBURH5yE2EUP?cluster=devnet)
+- product: `Espresso`
+- price_raw: `1000000`
+- buyer delta: `-1000000`
+- store delta: `+1000000`
+- total_purchases: `0 -> 1`
 
-Gecko is how an agent moves money on Solana and proves it landed as asked. It holds no
-key and signs nothing: your signer does.
+Full receipt: [`receipts/VqNZWzoo.md`](receipts/VqNZWzoo.md).
 
-This is your capstone project, presented on **Friday 2 October**. The certificate is the
-final assignment, graded privately in its own repository; nothing here changes that grade.
+## Example refusal
+
+For `two bags of beans`, the pinned intent asked for quantity `2`, but the prepared transaction contained quantity `1`.
+
+```text
+field: quantity
+asked: 2
+found: 1
+signed: false
 
 ## Contents
 
